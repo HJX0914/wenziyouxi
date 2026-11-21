@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>回合制文字游戏 - 正式版2.2</title>
+<title>回合制文字游戏 - 豪华版</title>
 <style>
   :root {
     --bg: #0b0e14; --panel: #131820; --border: #232a36; --text: #e6edf3;
@@ -12,7 +12,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body {
-    background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
     height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
   }
   .game-container {
@@ -45,7 +45,11 @@
     padding: 20px; position: relative;
   }
   .char-box { display: flex; flex-direction: column; align-items: center; width: 100%; transition: transform 0.1s; }
-  .char-emoji { font-size: 80px; line-height: 1; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
+  .char-emoji { 
+    font-size: 80px; line-height: 1; 
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); 
+  }
   .char-name { margin-top: 10px; font-weight: bold; font-size: 15px; font-family: var(--code); }
   .hp-bar-container {
     width: 80%; height: 12px; background: #333; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #444;
@@ -105,6 +109,7 @@
     padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
     background: transparent; color: var(--text); font-size: 14px; font-weight: bold;
     cursor: pointer; transition: all 0.2s; font-family: inherit;
+    display: inline-flex; align-items: center;
   }
   .btn:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
   .btn:active { transform: scale(0.96); }
@@ -115,6 +120,28 @@
   .btn.purple { background: rgba(199,146,234,0.15); border-color: var(--purple); color: var(--purple); }
   .btn.gold { background: rgba(255,180,84,0.15); border-color: var(--gold); color: var(--gold); }
   .btn.blue { background: rgba(77,159,255,0.15); border-color: var(--blue); color: var(--blue); }
+  
+  .kbd {
+    display: inline-flex; justify-content: center; align-items: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    background: linear-gradient(to bottom, #2a3441, #1f2632);
+    border: 1px solid #3a4758; border-bottom: 2px solid #3a4758;
+    border-radius: 4px; font-size: 11px; font-family: var(--code);
+    color: #e6edf3; margin-right: 8px; font-weight: bold;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    transition: all 0.1s;
+  }
+  .btn.primary .kbd {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.2));
+    border-color: rgba(0,0,0,0.3); color: #000;
+  }
+  .btn.danger .kbd {
+    background: linear-gradient(to bottom, rgba(255,107,107,0.2), rgba(255,107,107,0.1));
+    border-color: rgba(255,107,107,0.4); color: var(--danger);
+  }
+  .btn:hover .kbd { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+  .btn.primary:hover .kbd { background: rgba(0,0,0,0.2); }
+
   .modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
     display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px);
@@ -128,11 +155,14 @@
   .modal h3 { margin-bottom: 15px; text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
   .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .item-btn {
-    padding: 10px; text-align: left; background: #171d27; border: 1px solid var(--border);
+    padding: 10px 12px; text-align: left; background: #171d27; border: 1px solid var(--border);
     border-radius: 6px; color: var(--text); cursor: pointer; font-family: var(--code); font-size: 13px;
+    transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
   }
-  .item-btn:hover { border-color: var(--blue); }
-  /* 存档管理 */
+  .item-btn:hover { border-color: var(--blue); background: rgba(77,159,255,0.05); }
+  .item-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .item-btn > span:first-child { display: flex; align-items: center; }
+
   .save-item {
     display: flex; align-items: center; gap: 8px;
     background: #171d27; border: 1px solid var(--border); border-radius: 6px;
@@ -178,11 +208,45 @@
   .rarity-rare { color: var(--blue); }
   .rarity-epic { color: var(--purple); }
   .rarity-legendary { color: var(--gold); }
+  
   .talent-node {
-    background: #171d27; border: 1px solid var(--border); border-radius: 6px;
-    padding: 8px; margin-bottom: 8px; font-size: 12px;
+    background: #171d27; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; margin-bottom: 10px; font-size: 12px;
+    display: flex; flex-direction: column;
   }
-  .talent-node .btn-mini { margin-top: 6px; width: 100%; }
+  .talent-node-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: bold; margin-bottom: 4px;
+  }
+  .talent-node-desc {
+    font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.4;
+  }
+  .talent-progress-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .talent-btn {
+    width: 26px; height: 26px; border-radius: 6px;
+    border: 1px solid var(--border); background: #1f2632;
+    color: var(--text); font-size: 16px; font-weight: bold;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; transition: all 0.15s; padding: 0; line-height: 1;
+  }
+  .talent-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: var(--muted); }
+  .talent-btn:active:not(:disabled) { transform: scale(0.9); }
+  .talent-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+  .talent-btn.minus { color: var(--danger); border-color: rgba(255,107,107,0.3); }
+  .talent-btn.minus:hover:not(:disabled) { background: rgba(255,107,107,0.1); }
+  .talent-btn.plus { color: var(--accent); border-color: rgba(61,220,151,0.3); }
+  .talent-btn.plus:hover:not(:disabled) { background: rgba(61,220,151,0.1); }
+  
+  .talent-bar-bg {
+    flex: 1; height: 14px; background: #11151d; border-radius: 7px;
+    border: 1px solid var(--border); display: flex; gap: 3px; padding: 2px;
+  }
+  .talent-segment {
+    flex: 1; background: #2a3441; border-radius: 3px; transition: background 0.3s;
+  }
+
   .quest-card {
     background: #171d27; border: 1px solid var(--border); border-radius: 8px;
     padding: 12px; margin-bottom: 10px;
@@ -208,6 +272,16 @@
   .victory-content {
     animation: borderGlow 2s infinite; border-width: 2px !important;
     background: linear-gradient(135deg, #131820 0%, #2a2418 100%) !important;
+  }
+
+  /* 骰子动画 */
+  @keyframes rollDice {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .dice-rolling {
+    animation: rollDice 0.5s ease-in-out infinite;
   }
 </style>
 </head>
@@ -235,6 +309,7 @@
         <div class="hp-bar-container"><div class="hp-bar" id="stage-player-hp-bar" style="width:100%; background:var(--accent);"></div></div>
         <div class="hp-text" id="stage-player-hp-text">300 / 300</div>
         <div class="status-icons" id="playerStatusIcons"></div>
+        <div style="margin-top:8px; font-size:12px; font-family:var(--code); color:var(--purple);" id="petDisplay"></div>
       </div>
       <div class="vs-text" id="vsText">VS</div>
       <div class="char-box" id="enemyBox" style="display: none;">
@@ -254,9 +329,18 @@
 <!-- 背包 -->
 <div class="modal" id="bagModal">
   <div class="modal-content">
-    <h3>背包</h3>
+    <h3>背包 <span style="font-size:12px; color:var(--muted); font-weight:normal;">(直接按键盘数字使用，Esc 关闭)</span></h3>
     <div class="item-grid" id="bagList"></div>
-    <button class="btn" style="margin-top: 20px; width: 100%;" onclick="closeBag()">关闭</button>
+    <button class="btn" style="margin-top: 20px; width: 100%; justify-content: center;" onclick="closeBag()">关闭 (Esc)</button>
+  </div>
+</div>
+
+<!-- 技能栏 -->
+<div class="modal" id="skillModal">
+  <div class="modal-content">
+    <h3>使用技能 <span style="font-size:12px; color:var(--muted); font-weight:normal;">(按对应数字键释放，Esc 关闭)</span></h3>
+    <div class="item-grid" id="skillList" style="grid-template-columns: 1fr;"></div>
+    <button class="btn" style="margin-top: 20px; width: 100%; justify-content: center;" onclick="closeSkillModal()">返回 (Esc)</button>
   </div>
 </div>
 
@@ -285,16 +369,16 @@
     <div id="equipSlots" style="display:flex;gap:10px;margin-bottom:15px;"></div>
     <h4 style="margin-bottom:8px;font-size:13px;">仓库 <span id="equipBagCount" style="color:var(--muted);"></span></h4>
     <div id="equipBagList" style="max-height:280px;overflow-y:auto;"></div>
-    <button class="btn" style="margin-top:15px;" onclick="closeEquipPanel()">关闭</button>
+    <button class="btn" style="margin-top:15px; justify-content: center;" onclick="closeEquipPanel()">关闭</button>
   </div>
 </div>
 
 <!-- 天赋树 -->
 <div class="modal" id="talentModal">
-  <div class="modal-content" style="max-width: 780px;">
+  <div class="modal-content" style="max-width: 800px;">
     <h3>🌳 天赋树 <span style="color: var(--purple); font-size: 14px;">剩余: <span id="talentPointsDisplay">0</span> 点</span></h3>
-    <div id="talentGrid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;"></div>
-    <button class="btn" style="margin-top: 15px;" onclick="closeTalentTree()">关闭</button>
+    <div id="talentGrid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;"></div>
+    <button class="btn" style="margin-top: 15px; justify-content: center;" onclick="closeTalentTree()">关闭</button>
   </div>
 </div>
 
@@ -303,7 +387,7 @@
   <div class="modal-content" style="max-width: 650px;">
     <h3>📜 悬赏任务板</h3>
     <div id="questList"></div>
-    <button class="btn" style="margin-top: 15px;" onclick="closeQuestBoard()">关闭</button>
+    <button class="btn" style="margin-top: 15px; justify-content: center;" onclick="closeQuestBoard()">关闭</button>
   </div>
 </div>
 
@@ -317,7 +401,7 @@
       <button class="tab-btn" id="tabItem" onclick="switchAchTab('item')">物品图鉴</button>
     </div>
     <div id="achContent" style="max-height:420px;overflow-y:auto;"></div>
-    <button class="btn" style="margin-top: 15px;" onclick="closeAchievementPanel()">关闭</button>
+    <button class="btn" style="margin-top: 15px; justify-content: center;" onclick="closeAchievementPanel()">关闭</button>
   </div>
 </div>
 
@@ -326,7 +410,7 @@
   <div class="modal-content" style="max-width: 560px;">
     <h3>💾 存档管理</h3>
     <div id="saveList" style="max-height: 50vh; overflow-y: auto;"></div>
-    <button class="btn" style="margin-top: 15px;" onclick="closeSaveManager()">关闭</button>
+    <button class="btn" style="margin-top: 15px; justify-content: center;" onclick="closeSaveManager()">关闭</button>
   </div>
 </div>
 
@@ -348,6 +432,19 @@
 </div>
 
 <script>
+// 全局防丢档标记
+let isSaved = true;
+function markDirty() { isSaved = false; }
+
+// 浏览器退出提醒
+window.addEventListener('beforeunload', (e) => {
+  if (!isSaved) {
+    e.preventDefault();
+    e.returnValue = '您有未保存的游戏进度，确定要离开吗？';
+    return e.returnValue;
+  }
+});
+
 // ==================== 音效 ====================
 const SFX = {
   ctx: null,
@@ -398,6 +495,7 @@ const SFX = {
       case 'stun': tone(1200,0.1,'square',0.08); setTimeout(()=>tone(400,0.25,'square',0.08),120); break;
       case 'equip': tone(700,0.08,'triangle',0.1); setTimeout(()=>tone(900,0.12,'triangle',0.1),80); break;
       case 'ach': tone(880,0.1,'square',0.08); setTimeout(()=>tone(1100,0.1,'square',0.08),100); setTimeout(()=>tone(1320,0.25,'square',0.08),200); break;
+      case 'dice': noise(0.1,'highpass',1000,0.2); setTimeout(()=>noise(0.1,'highpass',1500,0.2),100); setTimeout(()=>tone(600,0.2,'square',0.1),200); break;
     }
   }
 };
@@ -463,7 +561,8 @@ const ACHIEVEMENT_DEF = [
   { id:'abyss10', name:'深渊探路者', desc:'到达深渊第10层', check:s=>s.stats.abyssBest>=10 },
   { id:'abyss20', name:'屠龙者', desc:'击败灭世魔龙', check:s=>s.hasWon },
   { id:'rich', name:'富甲一方', desc:'金币达到10000', check:s=>s.gold>=10000 },
-  { id:'collector', name:'收藏家', desc:'仓库装备达到20件', check:s=>s.equipBag.length>=20 }
+  { id:'collector', name:'收藏家', desc:'仓库装备达到20件', check:s=>s.equipBag.length>=20 },
+  { id:'gambler', name:'赌徒心理', desc:'在赌场赢取1000金币', check:s=>s.stats.casinoWon>=1000 }
 ];
 const MONSTER_CODEX = ['弹簧怪','史莱姆','骷髅兵','巫师','深渊魔物','深渊领主','深渊终焉·灭世魔龙'];
 const ITEM_CODEX_LIST = [ITEMS.HEAL, ITEMS.ATTACK, ITEMS.PILL, 101, 102, 103, 104];
@@ -477,15 +576,18 @@ function defaultState() {
     diejiaCache:new Array(1002).fill(0), diejiaTop:1,
     loan:{active:false,amount:0,days:0}, enemy:null,
     weaponLv:0, talentPoints:0, critRate:0, lifesteal:0,
-    abyssFloor:0, inAbyss:false, bankGold:0, ironOre:0, hasWon:false,
+    abyssFloor:0, inAbyss:false, 
+    bankGold:0, bankTotal: 5000,
+    ironOre:0, hasWon:false,
     playerStatus:[], pity:0,
     equipment: { weapon:null, armor:null, ring:null },
     equipBag: [],
     talentTree: { atk:0,crit:0,critDmg:0,execute:0,hp:0,def:0,lifesteal:0,shield:0,gold:0,interest:0,discount:0,iron:0 },
     quests: [],
-    stats: { kills:0, maxHit:0, totalDamage:0, abyssBest:0, bankRobbed:0, legendaryPulled:0 },
+    stats: { kills:0, maxHit:0, totalDamage:0, abyssBest:0, bankRobbed:0, legendaryPulled:0, casinoWon:0 },
     achievements: {},
-    codex: { monsters:{}, items:{} }
+    codex: { monsters:{}, items:{} },
+    pet: { type: 0, lvl: 0 } // 0:无, 1:火精灵, 2:光精灵
   };
 }
 const STATE = defaultState();
@@ -607,6 +709,7 @@ function equipFromBag(idx) {
   if (old) STATE.equipBag.push(old);
   SFX.play('equip');
   log(`装备了 [${eq.name}]`, 'heal');
+  markDirty();
   updateUI();
   openEquipPanel();
 }
@@ -618,6 +721,7 @@ function unequipSlot(slot) {
   STATE.equipBag.push(eq);
   SFX.play('click');
   log(`卸下了 [${eq.name}]`, 'sys');
+  markDirty();
   updateUI();
   openEquipPanel();
 }
@@ -678,41 +782,106 @@ function closeEquipPanel() { closeModal('equipModal'); startGame(); }
 // ==================== 天赋树 ====================
 function openTalentTree() { renderTalentTree(); document.getElementById('talentModal').classList.add('show'); }
 function closeTalentTree() { closeModal('talentModal'); openUpgrade(); }
+
 function renderTalentTree() {
   const grid = document.getElementById('talentGrid');
   grid.innerHTML = '';
   document.getElementById('talentPointsDisplay').textContent = STATE.talentPoints;
+  
   for (const branch in TALENT_DEF) {
     const col = document.createElement('div');
+    
     const h = document.createElement('h4');
-    h.style.cssText = `text-align:center;color:${TALENT_BRANCH_COLORS[branch]};margin-bottom:8px;font-size:13px;`;
+    h.style.cssText = `text-align:center;color:${TALENT_BRANCH_COLORS[branch]};margin-bottom:12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:6px;`;
     h.textContent = TALENT_BRANCH_NAMES[branch];
     col.appendChild(h);
+    
     for (const node of TALENT_DEF[branch]) {
       const lv = STATE.talentTree[node.id] || 0;
       const div = document.createElement('div');
       div.className = 'talent-node';
-      const btn = document.createElement('button');
-      btn.className = 'btn-mini';
-      btn.textContent = lv >= node.max ? '已满级' : `升级 (${node.cost}点)`;
-      btn.disabled = lv >= node.max || STATE.talentPoints < node.cost;
-      btn.onclick = ()=>upTalentNode(node);
-      div.innerHTML = `<div style="font-weight:bold;">${node.name} <span style="color:var(--muted);font-size:11px;">Lv ${lv}/${node.max}</span></div>
-        <div style="font-size:11px;color:var(--muted);margin:3px 0;">${node.desc}</div>`;
-      div.appendChild(btn);
+      
+      const header = document.createElement('div');
+      header.className = 'talent-node-header';
+      header.innerHTML = `<span>${node.name}</span> <span style="color:var(--muted);font-size:11px;font-weight:normal;">Lv ${lv}/${node.max}</span>`;
+      div.appendChild(header);
+      
+      const desc = document.createElement('div');
+      desc.className = 'talent-node-desc';
+      desc.textContent = node.desc;
+      div.appendChild(desc);
+      
+      const progressRow = document.createElement('div');
+      progressRow.className = 'talent-progress-row';
+      
+      const btnMinus = document.createElement('button');
+      btnMinus.className = 'talent-btn minus';
+      btnMinus.textContent = '−';
+      btnMinus.disabled = lv <= 0;
+      btnMinus.onclick = () => downTalentNode(node);
+      
+      const barBg = document.createElement('div');
+      barBg.className = 'talent-bar-bg';
+      for (let i = 0; i < node.max; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'talent-segment';
+        if (i < lv) {
+          seg.style.background = TALENT_BRANCH_COLORS[branch];
+          seg.style.boxShadow = `0 0 5px ${TALENT_BRANCH_COLORS[branch]}`;
+        }
+        barBg.appendChild(seg);
+      }
+      
+      const btnPlus = document.createElement('button');
+      btnPlus.className = 'talent-btn plus';
+      btnPlus.textContent = '+';
+      btnPlus.disabled = lv >= node.max || STATE.talentPoints < node.cost;
+      btnPlus.onclick = () => upTalentNode(node);
+      
+      progressRow.appendChild(btnMinus);
+      progressRow.appendChild(barBg);
+      progressRow.appendChild(btnPlus);
+      
+      div.appendChild(progressRow);
       col.appendChild(div);
     }
     grid.appendChild(col);
   }
 }
+
 function upTalentNode(node) {
   const lv = STATE.talentTree[node.id] || 0;
   if (lv >= node.max) return;
   if (STATE.talentPoints < node.cost) { log('天赋点不足！','dmg'); return; }
   STATE.talentPoints -= node.cost;
   STATE.talentTree[node.id] = lv + 1;
+  
+  if (node.id === 'hp') {
+    STATE.maxHp += 20;
+    STATE.hp += 20;
+  }
+  
   SFX.play('buy');
   log(`天赋 [${node.name}] 提升至 Lv ${lv+1}`, 'heal');
+  markDirty();
+  updateUI();
+  renderTalentTree();
+}
+
+function downTalentNode(node) {
+  const lv = STATE.talentTree[node.id] || 0;
+  if (lv <= 0) return;
+  STATE.talentTree[node.id] = lv - 1;
+  STATE.talentPoints += node.cost;
+  
+  if (node.id === 'hp') {
+    STATE.maxHp = Math.max(1, STATE.maxHp - 20);
+    if (STATE.hp > STATE.maxHp) STATE.hp = STATE.maxHp;
+  }
+  
+  SFX.play('click');
+  log(`撤销天赋 [${node.name}]，返还 ${node.cost} 天赋点。`, 'sys');
+  markDirty();
   updateUI();
   renderTalentTree();
 }
@@ -725,6 +894,7 @@ function checkAchievements() {
       STATE.gold += 100;
       SFX.play('ach');
       log(`🏅 成就解锁：${a.name}！（+100 金币）`, 'reward');
+      markDirty();
     }
   }
 }
@@ -768,6 +938,7 @@ function claimQuest(idx) {
   SFX.play('coin');
   log(`📜 任务完成：${q.name}，获得 ${q.reward.gold} 金币、${q.reward.talent} 天赋点、${q.reward.iron} 陨铁。`, 'reward');
   STATE.quests[idx] = generateQuest();
+  markDirty();
   updateUI();
   renderQuestBoard();
   checkAchievements();
@@ -883,6 +1054,13 @@ function updateUI() {
   document.getElementById('stage-player-lvl').textContent = STATE.lvl;
   document.getElementById('stage-player-hp-text').textContent = `${Math.max(0,STATE.hp)} / ${STATE.maxHp}`;
   document.getElementById('stage-player-hp-bar').style.width = `${Math.max(0,STATE.hp/STATE.maxHp*100)}%`;
+  
+  // 宠物显示
+  const petEl = document.getElementById('petDisplay');
+  if (STATE.pet.type === 1) petEl.innerHTML = `🔥 火精灵 Lv.${STATE.pet.lvl}`;
+  else if (STATE.pet.type === 2) petEl.innerHTML = `✨ 光精灵 Lv.${STATE.pet.lvl}`;
+  else petEl.innerHTML = '';
+
   renderStatus(STATE.playerStatus, document.getElementById('playerStatusIcons'));
   if (STATE.enemy) {
     document.getElementById('stage-enemy-name').textContent = STATE.enemy.name;
@@ -903,12 +1081,19 @@ function log(text, cls='sys') {
   while (consoleEl.children.length>500) consoleEl.removeChild(consoleEl.firstChild);
   consoleEl.scrollTop = consoleEl.scrollHeight;
 }
+
 function setActions(buttons) {
   actionsEl.innerHTML = '';
-  buttons.forEach(b=>{
+  buttons.forEach((b, index) => {
     const btn = document.createElement('button');
     btn.className = `btn ${b.cls||''}`;
-    btn.textContent = b.text;
+    
+    if (index < 9) {
+      btn.innerHTML = `<span class="kbd">${index + 1}</span>${b.text}`;
+    } else {
+      btn.innerHTML = b.text;
+    }
+    
     btn.onclick = ()=>{
       SFX.play('click');
       actionsEl.querySelectorAll('button').forEach(x=>x.disabled=true);
@@ -949,6 +1134,149 @@ function playHealAnim(damage) {
   setTimeout(()=>dmgEl.remove(), 800);
 }
 
+// ==================== 宠物与赌场 ====================
+function openPetShop() {
+  setActions([
+    { text: "雇佣 火精灵 (1000G)", cls: "danger", onClick: () => {
+      if (STATE.pet.type === 1) { log("你已经拥有火精灵了！", "dmg"); return; }
+      if (STATE.gold < 1000) { log("金币不足！", "dmg"); return; }
+      STATE.gold -= 1000; STATE.pet.type = 1; STATE.pet.lvl = 1;
+      log("成功雇佣火精灵！它在战斗中会协助攻击。", "reward"); SFX.play('levelup'); markDirty(); updateUI(); openPetShop();
+    }},
+    { text: "雇佣 光精灵 (1000G)", cls: "gold", onClick: () => {
+      if (STATE.pet.type === 2) { log("你已经拥有光精灵了！", "dmg"); return; }
+      if (STATE.gold < 1000) { log("金币不足！", "dmg"); return; }
+      STATE.gold -= 1000; STATE.pet.type = 2; STATE.pet.lvl = 1;
+      log("成功雇佣光精灵！它在战斗中会为你回血。", "reward"); SFX.play('levelup'); markDirty(); updateUI(); openPetShop();
+    }},
+    { text: "升级宠物 (500G/级)", onClick: () => {
+      if (STATE.pet.type === 0) { log("你还没有宠物！", "dmg"); return; }
+      if (STATE.pet.lvl >= 10) { log("宠物已达最高等级！", "sys"); return; }
+      if (STATE.gold < 500) { log("金币不足！", "dmg"); return; }
+      STATE.gold -= 500; STATE.pet.lvl++;
+      log(`宠物升级成功！当前等级 Lv.${STATE.pet.lvl}`, "heal"); SFX.play('levelup'); markDirty(); updateUI(); openPetShop();
+    }},
+    { text: "返回城镇", onClick: openCity }
+  ]);
+  log(`🐾 宠物店。当前宠物: ${STATE.pet.type===0?'无':(STATE.pet.type===1?'火精灵':'光精灵')} Lv.${STATE.pet.lvl}`, 'sys');
+}
+
+function openCasino() {
+  let bet = 100;
+  const render = () => {
+    setActions([
+      { text: `押注：${bet} (点击修改)`, cls: "gold", onClick: () => {
+        let input = prompt("请输入押注金额 (100~5000):", bet.toString());
+        if (input === null) return;
+        let v = parseInt(input);
+        if (!isNaN(v) && v >= 100 && v <= 5000) { bet = v; openCasino(); }
+        else { log("无效的押注金额！", "dmg"); openCasino(); }
+      }},
+      { text: "🎲 押大 (51-100)", cls: "danger", onClick: () => playCasino('big', bet) },
+      { text: "🎲 押小 (1-50)", cls: "blue", onClick: () => playCasino('small', bet) },
+      { text: "返回城镇", onClick: openCity }
+    ]);
+  };
+  render();
+  log(`🎰 欢迎来到赌场。当前押注：${bet}。请选择押大或押小。`, 'sys');
+}
+
+function playCasino(choice, bet) {
+  if (STATE.gold < bet) { log("金币不足，无法押注！", "dmg"); openCasino(); return; }
+  STATE.gold -= bet;
+  updateUI();
+  SFX.play('dice');
+  log("骰子滚动中...", "sys");
+  
+  setTimeout(() => {
+    const roll = Math.floor(Math.random() * 100) + 1;
+    const isBig = roll > 50;
+    const isWin = (choice === 'big' && isBig) || (choice === 'small' && !isBig);
+    
+    log(`🎲 骰子摇出了：${roll} (${isBig?'大':'小'})`, isBig?'dmg':'atk');
+    
+    if (isWin) {
+      STATE.gold += bet * 2;
+      STATE.stats.casinoWon = (STATE.stats.casinoWon || 0) + bet;
+      log(`恭喜你赢了！获得 ${bet} 金币。`, 'reward');
+      SFX.play('levelup');
+    } else {
+      log(`很遗憾，你输了 ${bet} 金币。`, 'dmg');
+      SFX.play('fail');
+    }
+    markDirty();
+    updateUI();
+    checkAchievements();
+    openCasino();
+  }, 800);
+}
+
+// ==================== 随机奇遇 ====================
+function triggerRandomEvent() {
+  setActions([]);
+  const roll = Math.floor(Math.random() * 3);
+  if (roll === 0) {
+    // 神秘商人
+    log("🧙‍♂️ 你在野外遇到了一个神秘商人...", "sys");
+    setTimeout(() => {
+      setActions([
+        { text: "买一瓶回复药 (10G)", cls: "primary", onClick: () => {
+          if (STATE.gold >= 10) {
+            STATE.gold -= 10; addItem(ITEMS.HEAL);
+            log("购买了回复药。", "heal"); markDirty(); updateUI();
+          } else log("金币不足！", "dmg");
+          startRandomBattle();
+        }},
+        { text: "攻击他 (可能掉落大量金币)", cls: "danger", onClick: () => {
+          if (Math.random() < 0.5) {
+            let g = Math.floor(Math.random() * 200) + 50;
+            STATE.gold += g;
+            log(`你击败了商人，搜刮了 ${g} 金币！`, "reward"); SFX.play('coin');
+          } else {
+            log("商人是个隐藏的武林高手，你被反杀扣了 50 点血！", "dmg"); STATE.hp -= 50; SFX.play('fail');
+          }
+          markDirty(); updateUI();
+          if (STATE.hp <= 0) loseBattle(); else startRandomBattle();
+        }},
+        { text: "离开，继续探索", onClick: startRandomBattle }
+      ]);
+    }, 500);
+  } else if (roll === 1) {
+    // 宝箱
+    log("🎁 你发现了一个无主的宝箱！", "sys");
+    setTimeout(() => {
+      setActions([
+        { text: "打开宝箱", cls: "gold", onClick: () => {
+          if (Math.random() < 0.7) {
+            let g = Math.floor(Math.random() * 100) + 20;
+            STATE.gold += g;
+            log(`打开宝箱，获得了 ${g} 金币！`, "reward"); SFX.play('coin');
+          } else {
+            log("宝箱是个陷阱！你损失了 20 点血量。", "dmg"); STATE.hp -= 20; SFX.play('hurt');
+          }
+          markDirty(); updateUI();
+          if (STATE.hp <= 0) loseBattle(); else startRandomBattle();
+        }},
+        { text: "不管它，继续探索", onClick: startRandomBattle }
+      ]);
+    }, 500);
+  } else {
+    // 女神的祝福
+    log("✨ 你遇到了一尊散发光芒的女神像。", "sys");
+    setTimeout(() => {
+      setActions([
+        { text: "祈祷 (恢复30%血量)", cls: "primary", onClick: () => {
+          let heal = Math.floor(STATE.maxHp * 0.3);
+          STATE.hp = Math.min(STATE.maxHp, STATE.hp + heal);
+          log(`女神像显灵，你恢复了 ${heal} 点血量！`, "heal"); SFX.play('heal');
+          markDirty(); updateUI();
+          startRandomBattle();
+        }}
+      ]);
+    }, 500);
+  }
+}
+
 // ==================== 城镇 ====================
 function openCity() {
   setActions([
@@ -958,6 +1286,8 @@ function openCity() {
     { text:"🛒 商店", onClick:openShop },
     { text:"🏆 升级/天赋", cls:"purple", onClick:openUpgrade },
     { text:"🎰 抽奖", onClick:showLotteryPanel },
+    { text:"🐾 宠物店", cls:"blue", onClick:openPetShop },
+    { text:"🎲 赌场", cls:"danger", onClick:openCasino },
     { text:"📜 任务板", cls:"blue", onClick:openQuestBoard },
     { text:"🏅 成就/图鉴", onClick:openAchievementPanel },
     { text:"返回主界面", onClick:startGame }
@@ -1043,6 +1373,7 @@ function drawLottery(count) {
   const btn10 = document.getElementById('btnDraw10');
   btn1.disabled = btn10.disabled = true;
   STATE.gold -= cost;
+  markDirty();
   updateUI();
   SFX.play('gacha');
   const grid = document.getElementById('lotteryGrid');
@@ -1179,10 +1510,13 @@ function openBank() {
     { text:"存款 (至少100, 100的倍数)", onClick:()=>{
       const amt = parseInt(prompt('请输入存款金额 (需为100的倍数):','100'));
       if (!isNaN(amt)&&amt>0&&amt%100===0&&STATE.gold>=amt) {
-        STATE.gold-=amt; STATE.bankGold+=amt;
+        STATE.gold-=amt; 
+        STATE.bankGold+=amt;
+        STATE.bankTotal += amt;
         log(`成功存入 ${amt} 金币。`,'heal'); SFX.play('coin'); updateUI();
         updateQuestProgress('bank', STATE.bankGold);
         checkAchievements();
+        markDirty();
       } else log('存款失败：金额不符或金币不足','dmg');
       openBank();
     }},
@@ -1190,31 +1524,37 @@ function openBank() {
       const amt = parseInt(prompt('请输入取款金额:','100'));
       if (!isNaN(amt)&&amt>0&&STATE.bankGold>=amt) {
         const fee = Math.floor(amt*0.05);
-        STATE.bankGold-=amt; STATE.gold += (amt-fee);
+        STATE.bankGold-=amt; 
+        STATE.bankTotal = Math.max(0, STATE.bankTotal - amt);
+        STATE.gold += (amt-fee);
         log(`取出 ${amt} 金币，扣除手续费 ${fee} 金币。`,'heal'); SFX.play('coin'); updateUI();
+        markDirty();
       } else log('取款失败','dmg');
       openBank();
     }},
     { text:"查看贷款", onClick:openLoan },
     { text:"💣 抢劫银行 (90%死亡率)", cls:"danger", onClick:()=>{
-      if (STATE.bankGold<=0) { log('银行里根本没多少钱，你放弃了抢劫。','sys'); openBank(); return; }
+      if (STATE.bankTotal<=0) { log('银行金库空空如也，你放弃了抢劫。','sys'); openBank(); return; }
       if (Math.random()<0.9) {
         SFX.play('alarm');
         log(`抢劫失败！保安将你打成重伤，被洗劫 ${Math.floor(STATE.gold/2)} 金币，血量降至1点！`,'dmg');
-        STATE.gold = Math.floor(STATE.gold/2); STATE.hp = 1;
+        STATE.gold = Math.floor(STATE.gold / 2); STATE.hp = 1;
         SFX.play('fail');
       } else {
-        log(`奇迹般地抢劫成功！卷走银行所有 ${STATE.bankGold} 金币！`,'reward');
-        STATE.gold += STATE.bankGold; STATE.bankGold = 0;
+        log(`奇迹般地抢劫成功！你卷走了银行金库所有的 ${STATE.bankTotal} 金币！（包含你的个人存款 ${STATE.bankGold}）`,'reward');
+        STATE.gold += STATE.bankTotal;
+        STATE.bankTotal = 0; 
+        STATE.bankGold = 0;
         STATE.stats.bankRobbed = (STATE.stats.bankRobbed||0)+1;
         SFX.play('levelup');
         checkAchievements();
       }
+      markDirty();
       updateUI(); openBank();
     }},
     { text:"返回城镇", onClick:openCity }
   ]);
-  log(`🏦 欢迎来到银行。当前存款: ${STATE.bankGold} 金币`,'sys');
+  log(`🏦 欢迎来到银行。当前金库总额: ${STATE.bankTotal} 金币 (其中您的存款: ${STATE.bankGold} 金币)`,'sys');
 }
 
 // ==================== 酒馆 ====================
@@ -1227,6 +1567,7 @@ function openTavern() {
       if (r<0.4) { STATE.maxHp+=20; STATE.hp+=20; log('酒保特调！血量上限永久+20。','reward'); }
       else if (r<0.7) { STATE.weaponLv+=1; log('顿悟了！武器强化等级+1。','reward'); }
       else { STATE.hp-=30; log('劣质假酒！损失30点血量。','dmg'); SFX.play('hurt'); }
+      markDirty();
       updateUI(); openTavern();
     }},
     { text:"打听流言 (20G)", onClick:()=>{
@@ -1234,6 +1575,7 @@ function openTavern() {
       STATE.gold-=20; SFX.play('coin');
       if (Math.random()<0.5) { STATE.sp+=30; log('技能点+30。','heal'); }
       else { STATE.dmgStack+=5; log('伤害叠加+5。','heal'); }
+      markDirty();
       updateUI(); openTavern();
     }},
     { text:"返回城镇", onClick:openCity }
@@ -1249,6 +1591,7 @@ function openBlacksmith() {
         STATE.ironOre-=3; STATE.gold-=200; STATE.weaponLv+=2;
         SFX.play('anvil'); log('锻造成功，武器强化+2！','reward');
         setTimeout(()=>SFX.play('anvil'),150); setTimeout(()=>SFX.play('levelup'),400);
+        markDirty();
       } else log('材料或金币不足！','dmg');
       updateUI(); openBlacksmith();
     }},
@@ -1265,12 +1608,14 @@ function openBlacksmith() {
       SFX.play('anvil');
       log(`锻造出 [${eq.name}]（${RARITY_NAMES[rarity]}${EQUIP_SLOTS[slot]}）：${formatEqStats(eq.stats)}`,'reward');
       setTimeout(()=>SFX.play('levelup'),400);
+      markDirty();
       updateUI(); checkAchievements(); openBlacksmith();
     }},
     { text:"拆解陨铁换钱 (1陨铁=100G)", onClick:()=>{
       if (STATE.ironOre>0) {
         STATE.ironOre--; STATE.gold+=100;
         log('卖出1个陨铁，获得100金币。','heal'); SFX.play('coin');
+        markDirty();
       } else log('你没有陨铁。','dmg');
       updateUI(); openBlacksmith();
     }},
@@ -1296,6 +1641,7 @@ function upgradeWeapon() {
     STATE.gold-=cost; STATE.weaponLv++;
     log(`武器强化成功！额外伤害 +${STATE.weaponLv*5}`,'heal');
     SFX.play('levelup'); updateUI();
+    markDirty();
   } else log('金币不够！','dmg');
   openUpgrade();
 }
@@ -1316,8 +1662,15 @@ function registerMonster(name) {
   const key = MONSTER_CODEX.find(m=>name.includes(m)) || base;
   STATE.codex.monsters[key] = (STATE.codex.monsters[key]||0)+1;
 }
+
 function startRandomBattle() {
   setActions([]);
+  // 30% 概率触发奇遇
+  if (Math.random() < 0.3) {
+    triggerRandomEvent();
+    return;
+  }
+
   STATE.inAbyss = false;
   STATE.playerStatus = [];
   playerDefending = false;
@@ -1340,6 +1693,7 @@ function startRandomBattle() {
   if (eq.spRegen>0) STATE.sp += eq.spRegen;
   updateUI();
   log(`遭遇了 ${STATE.enemy.name}！`,'dmg');
+  markDirty();
   battleLoop();
 }
 function startAbyss() {
@@ -1373,12 +1727,18 @@ function startAbyss() {
   updateQuestProgress('abyss', STATE.abyssFloor);
   if (STATE.abyssFloor===20) log('【终极决战】灭世魔龙！','crit');
   else log(`进入深渊第 ${STATE.abyssFloor} 层！遭遇了 ${STATE.enemy.name}${affixes.length?' ['+affixes.map(a=>AFFIX_DEF[a].name).join(',')+']':''}`,'dmg');
+  markDirty();
   battleLoop();
 }
 function battleLoop() {
   if (!STATE.enemy) return;
   if (STATE.enemy.hp<=0) { winBattle(); return; }
   if (STATE.hp<=0) { loseBattle(); return; }
+  
+  if (document.getElementById('skillModal').classList.contains('show')) {
+    updateSkillModalButtons();
+  }
+
   const dot = tickDot(STATE.playerStatus, STATE.maxHp);
   if (dot>0) {
     STATE.hp -= dot;
@@ -1400,10 +1760,10 @@ function battleLoop() {
 function showBattleActions() {
   if (!STATE.enemy||STATE.enemy.hp<=0) return;
   const btns = [
-    { text:"普通攻击 (1)", cls:"primary", onClick:playerAttack },
-    { text:"使用技能 (2)", onClick:useSkillsMenu },
-    { text:"防御 (4)", cls:"blue", onClick:playerDefend },
-    { text:"打开背包 (3)", onClick:()=>openBag(true, showBattleActions) }
+    { text:"普通攻击", cls:"primary", onClick:playerAttack },
+    { text:"使用技能", onClick:useSkillsMenu },
+    { text:"打开背包", onClick:()=>openBag(true, showBattleActions) },
+    { text:"防御", cls:"blue", onClick:playerDefend }
   ];
   if (STATE.inAbyss) {
     btns.push({ text:"撤退(清空层数)", cls:"danger", onClick:()=>{
@@ -1411,6 +1771,7 @@ function showBattleActions() {
       STATE.inAbyss = false; STATE.abyssFloor = 0;
       STATE.enemy = null; enemyBox.style.display = 'none'; vsText.textContent = 'VS';
       STATE.playerStatus = [];
+      markDirty();
       startGame();
     }});
   }
@@ -1466,8 +1827,28 @@ function playerAttack() {
   }
   updateUI();
   checkAchievements();
-  setTimeout(enemyTurn, 500);
+  markDirty();
+  setTimeout(petTurn, 400);
 }
+
+function petTurn() {
+  if (!STATE.enemy || STATE.enemy.hp <= 0) { setTimeout(enemyTurn, 200); return; }
+  if (STATE.pet.type === 1) {
+    const petDmg = Math.floor((10 + STATE.pet.lvl * 5) * (1 + STATE.lvl * 0.1));
+    STATE.enemy.hp -= petDmg;
+    log(`🔥 火精灵发动攻击，造成 ${petDmg} 点伤害！`, 'atk');
+    playHitAnim(enemyBox, petDmg);
+    updateUI();
+  } else if (STATE.pet.type === 2) {
+    const petHeal = Math.floor(5 + STATE.pet.lvl * 2);
+    STATE.hp = Math.min(STATE.maxHp, STATE.hp + petHeal);
+    log(`✨ 光精灵为你恢复了 ${petHeal} 点血量！`, 'heal');
+    playHealAnim(petHeal);
+    updateUI();
+  }
+  setTimeout(enemyTurn, 400);
+}
+
 function enemyTurn() {
   if (!STATE.enemy) return;
   if (STATE.enemy.hp<=0) { winBattle(); return; }
@@ -1541,12 +1922,14 @@ function applyEnemyDebuff() {
   }
 }
 function winBattle() {
+  closeSkillModal();
   tickLoan();
   const interestRate = 0.02+(STATE.talentTree.interest||0)*0.005;
   if (STATE.bankGold>0) {
     const interest = Math.floor(STATE.bankGold*interestRate);
     if (interest>0) {
       STATE.bankGold += interest;
+      STATE.bankTotal += interest;
       log(`【银行结算】存款利息 +${interest} 金币！`,'sys');
     }
   }
@@ -1563,6 +1946,7 @@ function winBattle() {
       STATE.hasWon = true;
       SFX.play('victory');
       document.getElementById('victoryModal').classList.add('show');
+      markDirty();
       return;
     }
     let reward = Math.floor(50*(1+STATE.abyssFloor*0.2));
@@ -1585,6 +1969,7 @@ function winBattle() {
       setTimeout(()=>SFX.play('levelup'), 200);
     }
     enemyEmoji.textContent = '💥';
+    markDirty();
     setTimeout(()=>{
       STATE.enemy = null; enemyBox.style.display = 'none'; updateUI();
       startAbyss();
@@ -1602,12 +1987,15 @@ function winBattle() {
   log(`等级提升！当前等级: ${STATE.lvl}，获得1天赋点`,'heal');
   SFX.play('coin'); setTimeout(()=>SFX.play('levelup'), 300);
   enemyEmoji.textContent = '💥';
+  markDirty();
   setTimeout(()=>{
     STATE.enemy = null; enemyBox.style.display = 'none'; vsText.textContent = 'VS';
     startGame();
   }, 1200);
 }
 function loseBattle() {
+  closeSkillModal();
+  markDirty();
   if (STATE.reviveCoins>0) {
     STATE.reviveCoins--;
     STATE.hp = STATE.maxHp;
@@ -1629,18 +2017,59 @@ function loseBattle() {
   }
 }
 
-// ==================== 技能 ====================
-function useSkillsMenu() {
-  setActions([]);
-  const btns = [];
-  if (STATE.skills[1]) btns.push({ text:'蓄力一击(10SP)', onClick:()=>useSkill(1) });
-  if (STATE.skills[2]) btns.push({ text:'回击(20SP)', onClick:()=>useSkill(2) });
-  if (STATE.skills[3]) btns.push({ text:'逃跑(30SP)', onClick:()=>useSkill(3) });
-  if (STATE.skills[4]) btns.push({ text:'吸血(35SP)', onClick:()=>useSkill(4) });
-  btns.push({ text:'返回', onClick:showBattleActions });
-  setActions(btns);
+// ==================== 技能面板 ====================
+function openSkillModal() {
+  updateSkillModalButtons();
+  document.getElementById('skillModal').classList.add('show');
 }
+
+function closeSkillModal() {
+  closeModal('skillModal');
+  if (STATE.enemy && STATE.enemy.hp > 0 && STATE.hp > 0) {
+    showBattleActions();
+  }
+}
+
+function updateSkillModalButtons() {
+  const list = document.getElementById('skillList');
+  list.innerHTML = '';
+  const allSkills = [
+    { id: 1, name: '蓄力一击', sp: 10 },
+    { id: 2, name: '回击', sp: 20 },
+    { id: 3, name: '逃跑', sp: 30 },
+    { id: 4, name: '吸血', sp: 35 }
+  ];
+  
+  let hasSkill = false;
+  allSkills.forEach(sk => {
+    if (STATE.skills[sk.id]) {
+      hasSkill = true;
+      const btn = document.createElement('button');
+      btn.className = 'item-btn';
+      btn.style.opacity = STATE.sp >= sk.sp ? '1' : '0.5';
+      btn.innerHTML = `<span><span class="kbd">${sk.id}</span> ${sk.name} (${sk.sp} SP)</span>`;
+      btn.onclick = () => useSkill(sk.id);
+      list.appendChild(btn);
+    }
+  });
+
+  if (!hasSkill) {
+    list.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">你还没有学会任何技能。</div>';
+  }
+}
+
+function useSkillsMenu() {
+  openSkillModal();
+}
+
 function useSkill(type) {
+  if (!document.getElementById('skillModal').classList.contains('show')) {
+    openSkillModal();
+    return;
+  }
+
+  document.querySelectorAll('#skillList button').forEach(b => b.disabled = true);
+
   let dmg = 0;
   if (type===1 && STATE.sp>=10) {
     STATE.sp -= 10;
@@ -1666,6 +2095,8 @@ function useSkill(type) {
     STATE.enemy = null; STATE.playerStatus = [];
     enemyBox.style.display = 'none'; vsText.textContent = 'VS';
     updateUI();
+    markDirty();
+    closeSkillModal();
     setTimeout(startGame, 800);
     return;
   } else if (type===4 && STATE.sp>=35) {
@@ -1679,57 +2110,84 @@ function useSkill(type) {
     SFX.play('drain');
   } else {
     log('技能点不够！','dmg');
-    setTimeout(showBattleActions, 500);
+    updateSkillModalButtons();
     return;
   }
-  updateUI(); checkAchievements();
-  setTimeout(enemyTurn, 500);
+  updateUI(); 
+  checkAchievements();
+  markDirty();
+  setTimeout(petTurn, 500); // 技能后触发宠物
 }
 
-// ==================== 背包 ====================
+// ==================== 背包系统 ====================
 function openBag(inBattle=false, onReturn=null) {
   bagReturn = onReturn || (inBattle?showBattleActions:startGame);
+  refreshBagList();
+  document.getElementById('bagModal').classList.add('show');
+}
+
+function refreshBagList() {
   const list = document.getElementById('bagList');
   list.innerHTML = '';
   for (let i=1;i<=STATE.bagSize;i++) {
     const item = STATE.bag[i];
     const btn = document.createElement('button');
     btn.className = 'item-btn';
-    btn.textContent = `${i}: ${ITEM_NAMES[item]||'未知'}`;
+    
+    const keyHint = i <= 9 ? `<span class="kbd">${i}</span>` : `<span style="display:inline-block;width:22px;"></span>`;
+    btn.innerHTML = `<span>${keyHint} ${ITEM_NAMES[item]||'未知'}</span>`;
+    
     if (item===ITEMS.EMPTY) btn.style.opacity = '0.4';
     btn.onclick = ()=>{ SFX.play('click'); useItem(i); };
     list.appendChild(btn);
   }
-  document.getElementById('bagModal').classList.add('show');
 }
+
 function closeBag() {
   closeModal('bagModal');
   const fn = bagReturn; bagReturn = null;
   if (fn) fn();
 }
+
 function useItem(slot) {
   const item = STATE.bag[slot];
   if (item===ITEMS.EMPTY) { log('这个格子是空的。','sys'); return; }
+  
+  let used = false;
   if (item===ITEMS.HEAL) {
     if (STATE.hp>=STATE.maxHp) { log('血量已满。','sys'); return; }
     STATE.hp = Math.min(STATE.maxHp, STATE.hp+20);
-    removeItem(slot);
-    log('恢复20点血量','heal'); playHealAnim(20);
+    used = true;
+    log('恢复20点血量','heal'); 
+    playHealAnim(20);
   } else if (item===ITEMS.ATTACK) {
-    STATE.dmgStack += 10; removeItem(slot);
+    STATE.dmgStack += 10; 
+    used = true;
     log('伤害叠加+10','heal'); SFX.play('buy');
   } else if (item===ITEMS.PILL) {
-    STATE.sp += 10; removeItem(slot);
+    STATE.sp += 10; 
+    used = true;
     log('技能点+10','heal'); SFX.play('buy');
   } else if (item>=101&&item<=104) {
     const id = item-100;
     if (!STATE.skills[id]) { STATE.skills[id]=1; log(`学会新技能：[${ITEM_NAMES[item]}]`,'heal'); }
     else log(`已掌握 [${ITEM_NAMES[item]}]，物品已消耗。`,'sys');
-    removeItem(slot); SFX.play('buy');
+    used = true;
+    SFX.play('buy');
   }
-  updateUI();
-  closeBag();
+  
+  if (used) {
+    removeItem(slot);
+    updateUI();
+    refreshBagList(); 
+    markDirty();
+    
+    if (bagReturn !== showBattleActions) {
+      startGame(); 
+    }
+  }
 }
+
 function removeItem(slot) {
   for (let i=slot;i<STATE.top;i++) STATE.bag[i] = STATE.bag[i+1];
   STATE.top--;
@@ -1759,6 +2217,7 @@ function buy(id, price, itemId) {
     STATE.gold -= price; STATE.bag[STATE.top] = itemId; STATE.top++;
     if (ITEM_CODEX_LIST.includes(itemId)) STATE.codex.items[itemId] = true;
     log('购买成功！','heal'); SFX.play('buy'); updateUI();
+    markDirty();
   } else if (STATE.gold<price) log('金币不够！','dmg');
   else log('背包已满！','dmg');
   openShop();
@@ -1770,6 +2229,7 @@ function buySkill(id, price, itemId) {
     STATE.bag[STATE.top] = itemId; STATE.top++;
     if (ITEM_CODEX_LIST.includes(itemId)) STATE.codex.items[itemId] = true;
     log('购买成功！','heal'); SFX.play('buy'); updateUI();
+    markDirty();
   } else if (STATE.gold<price) log('金币不够！','dmg');
   else log('背包已满！','dmg');
   openShop();
@@ -1778,6 +2238,7 @@ function buyMaxHp(price) {
   if (STATE.gold>=price) {
     STATE.gold-=price; STATE.maxHp+=40; STATE.hp+=40;
     log('血量上限提升40！','heal'); SFX.play('buy'); updateUI();
+    markDirty();
   } else log('金币不够！','dmg');
   openShop();
 }
@@ -1785,6 +2246,7 @@ function buyRevive(price) {
   if (STATE.gold>=price) {
     STATE.gold-=price; STATE.reviveCoins++;
     log('购买成功！','heal'); SFX.play('buy'); updateUI();
+    markDirty();
   } else log('金币不够！','dmg');
   openShop();
 }
@@ -1795,6 +2257,7 @@ function upSkill(id, baseCost) {
   if (STATE.gold>=cost) {
     STATE.gold-=cost; STATE.skillLv[id]++;
     log(`升级成功！等级 ${STATE.skillLv[id]}`,'heal'); SFX.play('levelup'); updateUI();
+    markDirty();
   } else log('金币不够','dmg');
   openUpgrade();
 }
@@ -1804,6 +2267,7 @@ function upBag() {
     if (STATE.gold>=cost) {
       STATE.gold-=cost; STATE.bagSize+=5;
       log(`背包升级！大小 ${STATE.bagSize}`,'heal'); SFX.play('levelup'); updateUI();
+      markDirty();
     } else log('金币不够','dmg');
   } else log('背包已达上限','sys');
   openUpgrade();
@@ -1826,17 +2290,21 @@ function takeLoan(amt, days) {
   if (STATE.loan.active) { log('已有未还清贷款','dmg'); openLoan(); return; }
   STATE.loan = { active:true, amount:amt, days };
   STATE.gold += amt;
+  STATE.bankTotal = Math.max(0, STATE.bankTotal - amt);
   updateUI();
   log(`成功贷款 ${amt} 金币，${days} 场战斗后到期。`,'reward'); SFX.play('coin');
+  markDirty();
   openLoan();
 }
 function repayLoan() {
   if (!STATE.loan.active) { log('无需还款','sys'); openLoan(); return; }
   if (STATE.gold<STATE.loan.amount) { log('金币不足!','dmg'); openLoan(); return; }
   STATE.gold -= STATE.loan.amount;
+  STATE.bankTotal += STATE.loan.amount;
   STATE.loan = { active:false, amount:0, days:0 };
   updateUI();
   log('已还清贷款','heal'); SFX.play('coin');
+  markDirty();
   openLoan();
 }
 function tickLoan() {
@@ -1849,6 +2317,7 @@ function tickLoan() {
       log(`银行从存款中扣除 ${STATE.loan.amount} 金币。`,'dmg');
     } else if (STATE.gold>=STATE.loan.amount) {
       STATE.gold -= STATE.loan.amount;
+      STATE.bankTotal += STATE.loan.amount;
       log(`你被迫支付了 ${STATE.loan.amount} 金币。`,'dmg');
     } else {
       const p = Math.floor(STATE.maxHp*0.3);
@@ -1858,6 +2327,7 @@ function tickLoan() {
     }
     STATE.loan = { active:false, amount:0, days:0 };
     SFX.play('alarm');
+    markDirty();
   } else if (STATE.loan.days<=3) {
     log(`⚠️ 贷款即将到期，剩余 ${STATE.loan.days} 场战斗！`,'dmg');
   }
@@ -1880,6 +2350,8 @@ function applySave(data) {
   else data.talentTree = Object.assign({}, def.talentTree, data.talentTree);
   if (!data.stats || typeof data.stats!=='object') data.stats = def.stats;
   else data.stats = Object.assign({}, def.stats, data.stats);
+  if (!data.pet || typeof data.pet!=='object') data.pet = def.pet;
+  else data.pet = Object.assign({}, def.pet, data.pet);
   if (!data.achievements || typeof data.achievements!=='object') data.achievements = {};
   if (!data.codex || typeof data.codex!=='object') data.codex = { monsters:{}, items:{} };
   if (!data.codex.monsters) data.codex.monsters = {};
@@ -1889,6 +2361,7 @@ function applySave(data) {
   if (!data.loan || typeof data.loan!=='object') data.loan = def.loan;
   else data.loan = Object.assign({}, def.loan, data.loan);
   if (typeof data.pity!=='number') data.pity = 0;
+  if (typeof data.bankTotal!=='number') data.bankTotal = 5000;
   data.enemy = null;
   Object.assign(STATE, data);
   if (!STATE.quests.length) initQuests();
@@ -1916,6 +2389,7 @@ function saveGame(onDone) {
     localStorage.setItem(`oj_game_save_${name}`, JSON.stringify(data));
     log(`游戏已保存至 [${name}]`,'heal');
     SFX.play('levelup');
+    isSaved = true;
   } catch(e) { log(`保存失败: ${e.message}`,'dmg'); }
   if (onDone) onDone();
 }
@@ -1988,6 +2462,7 @@ function loadSaveByName(name) {
     log(`已读取存档 [${name}]`,'heal');
     SFX.play('buy');
     closeModal('saveModal');
+    isSaved = true;
     startGame();
   } catch(e) {
     log(`读取失败: ${e.message}`,'dmg');
@@ -2013,6 +2488,7 @@ function continueEndless() {
   STATE.gold += 5000;
   log('获得通关奖励：5000 金币！','reward');
   updateUI();
+  markDirty();
   startAbyss();
 }
 
@@ -2031,6 +2507,7 @@ function startNewGame() {
   updateUI();
   log('欢迎来到文字游戏世界！','sys');
   SFX.play('levelup');
+  isSaved = false;
   startGame();
 }
 
@@ -2041,7 +2518,7 @@ function startGame() {
   if (STATE.hp<=0) {
     log('你死了...','dmg');
     setActions([
-      { text:'重生', cls:'danger', onClick:()=>{ STATE.hp=STATE.maxHp; updateUI(); startGame(); } },
+      { text:'重生', cls:'danger', onClick:()=>{ STATE.hp=STATE.maxHp; updateUI(); markDirty(); startGame(); } },
       { text:'回主菜单', onClick:showMainMenu }
     ]);
     return;
@@ -2058,38 +2535,65 @@ function startGame() {
     { text:'装备', onClick:openEquipPanel },
     { text:'背包', onClick:()=>openBag(false, startGame) },
     { text:'野外战斗', cls:'primary', onClick:startRandomBattle },
-    { text:'无尽深渊', cls:'danger', onClick:startAbyss },
+    { text:'无尽深渊', cls:"danger", onClick:startAbyss },
     { text:'🏙️ 城镇', cls:'gold', onClick:openCity },
     { text:'保存', onClick:()=>saveGame(startGame) },
     { text:'主菜单', onClick:showMainMenu }
   ]);
 }
 
-// ==================== 键盘 ====================
+// ==================== 全局键盘监听 ====================
 document.addEventListener('keydown', (e)=>{
-  const openModal = document.querySelector('.modal.show');
-  if (e.key==='Escape') {
-    if (openModal) {
-      if (openModal.id==='bagModal') closeBag();
-      else if (openModal.id==='lotteryModal') closeLotteryModal();
-      else if (openModal.id==='equipModal') closeEquipPanel();
-      else if (openModal.id==='talentModal') closeTalentTree();
-      else if (openModal.id==='questModal') closeQuestBoard();
-      else if (openModal.id==='achModal') closeAchievementPanel();
-      else if (openModal.id==='saveModal') closeSaveManager();
-      else closeModal(openModal.id);
+  const openModalEl = document.querySelector('.modal.show');
+  
+  if (e.key === 'Escape') {
+    if (openModalEl) {
+      if (openModalEl.id === 'bagModal') closeBag();
+      else if (openModalEl.id === 'skillModal') closeSkillModal();
+      else if (openModalEl.id === 'lotteryModal') closeLotteryModal();
+      else if (openModalEl.id === 'equipModal') closeEquipPanel();
+      else if (openModalEl.id === 'talentModal') closeTalentTree();
+      else if (openModalEl.id === 'questModal') closeQuestBoard();
+      else if (openModalEl.id === 'achModal') closeAchievementPanel();
+      else if (openModalEl.id === 'saveModal') closeSaveManager();
+      else closeModal(openModalEl.id);
     }
     return;
   }
-  if (openModal) return;
-  if (!STATE.enemy || STATE.enemy.hp<=0) return;
-  if (STATE.hp<=0) return;
-  const map = { '1':'普通攻击','2':'使用技能','3':'打开背包','4':'防御' };
-  const label = map[e.key];
-  if (!label) return;
-  const btns = Array.from(actionsEl.querySelectorAll('button'));
-  const btn = btns.find(b=>b.textContent.startsWith(label));
-  if (btn && !btn.disabled) btn.click();
+
+  // 背包弹窗快捷键
+  if (openModalEl && openModalEl.id === 'bagModal') {
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= 9 && num <= STATE.bagSize) {
+      if (STATE.bag[num] !== ITEMS.EMPTY) {
+        SFX.play('click');
+        useItem(num);
+      }
+    }
+    return;
+  }
+
+  // 技能弹窗快捷键
+  if (openModalEl && openModalEl.id === 'skillModal') {
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= 4) {
+      if (STATE.skills[num] && STATE.sp >= [0, 10, 20, 30, 35][num]) {
+        useSkill(num);
+      }
+    }
+    return;
+  }
+
+  // 通用页面快捷键 (战斗或非战斗)
+  if (!openModalEl) {
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= 9) {
+      const btns = Array.from(actionsEl.querySelectorAll('button'));
+      if (btns[num - 1] && !btns[num - 1].disabled) {
+        btns[num - 1].click();
+      }
+    }
+  }
 });
 
 document.getElementById('btnSpeed').onclick = ()=>{
